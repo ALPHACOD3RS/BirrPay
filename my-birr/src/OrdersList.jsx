@@ -11,81 +11,82 @@ const OrderPage = () => {
   const [loading, setLoading] = useState(true);
 
   const handleLogout = () => {
-    console.log("tshirt alelesh-------------------");
   };
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const { data: ordersData, error: ordersError } = await supabase
-          .from("orders")
-          .select("*");
+ useEffect(() => {
+  const fetchOrders = async () => {
+    try {
+      const { data: ordersData, error: ordersError } = await supabase
+        .from("orders")
+        .select("*");
 
-        if (ordersError) {
-          throw ordersError;
-        }
+      if (ordersError) {
+        throw ordersError;
+      }
 
-        const ordersWithUser = await Promise.all(
-          ordersData.map(async (order) => {
-            // Check if user_id or subscription_id is null
-            if (!order.user_id || !order.subscription_id) {
-              return {
-                ...order,
-                email: "Unknown",
-                fullname: "Unknown",
-                phone: "Unknown",
-                logo_link: "Unknown",
-                brand_name: "Unknown",
-              };
-            }
-
-            // Fetch user information for each order
-            const { data: userData, error: userError } = await supabase
-              .from("users")
-              .select("fullname, phone, email")
-              .eq("id", order.user_id)
-              .single();
-
-            if (userError) {
-              throw userError;
-            }
-
-            const { data: subscriptionData, error: subscriptionError } =
-              await supabase
-                .from("subscriptions")
-                .select("brand_name, logo_link")
-                .eq("id", order.subscription_id)
-                .single();
-
-            if (subscriptionError) {
-              throw subscriptionError;
-            }
-
+      const ordersWithUser = await Promise.all(
+        ordersData.map(async (order) => {
+          // Check if user_id or subscription_id is null
+          if (!order.user_id || !order.subscription_id) {
             return {
               ...order,
-              email: userData ? userData.email : "Unknown",
-              fullname: userData ? userData.fullname : "Unknown",
-              phone: userData ? userData.phone : "Unknown",
-              logo_link: subscriptionData
-                ? subscriptionData.logo_link
-                : "Unknown",
-              brand_name: subscriptionData
-                ? subscriptionData.brand_name
-                : "Unknown",
+              email: "Unknown",
+              fullname: "Unknown",
+              phone: "Unknown",
+              logo_link: "Unknown",
+              brand_name: "Unknown",
             };
-          })
-        );
+          }
 
-        setOrder(ordersWithUser);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching orders:", error.message);
-        setLoading(false);
-      }
-    };
+          // Fetch user information for each order
+          const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("fullname, phone, email")
+            .eq("id", order.user_id)
+            .single();
 
-    fetchOrders();
-  }, []); // Run once on component mount
+          if (userError) {
+            throw userError;
+          }
+
+          const { data: subscriptionData, error: subscriptionError } =
+            await supabase
+              .from("subscriptions")
+              .select("brand_name, logo_link")
+              .eq("id", order.subscription_id)
+              .single();
+
+          if (subscriptionError) {
+            throw subscriptionError;
+          }
+
+          return {
+            ...order,
+            email: userData ? userData.email : "Unknown",
+            fullname: userData ? userData.fullname : "Unknown",
+            phone: userData ? userData.phone : "Unknown",
+            logo_link: subscriptionData
+              ? subscriptionData.logo_link
+              : "Unknown",
+            brand_name: subscriptionData
+              ? subscriptionData.brand_name
+              : "Unknown",
+          };
+        })
+      );
+
+      // Reverse the list before setting it
+      setOrder(ordersWithUser.reverse());
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching orders:", error.message);
+      setLoading(false);
+    }
+  };
+
+  fetchOrders();
+}, []); // Run once on component mount
+
 
   if (loading) {
     return (
