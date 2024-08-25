@@ -13,7 +13,7 @@ const OrderPage = () => {
   const handleLogout = () => {
   };
 
- useEffect(() => {
+useEffect(() => {
   const fetchOrders = async () => {
     try {
       const { data: ordersData, error: ordersError } = await supabase
@@ -25,11 +25,12 @@ const OrderPage = () => {
       }
 
       const ordersWithUser = await Promise.all(
-        ordersData.map(async (order) => {
+        ordersData.map(async (order, index) => {
           // Check if user_id or subscription_id is null
           if (!order.user_id || !order.subscription_id) {
             return {
               ...order,
+              displayId: index + 1, // Assign a displayId based on the index
               email: "Unknown",
               fullname: "Unknown",
               phone: "Unknown",
@@ -62,6 +63,7 @@ const OrderPage = () => {
 
           return {
             ...order,
+            displayId: index + 1, // Assign a displayId based on the index
             email: userData ? userData.email : "Unknown",
             fullname: userData ? userData.fullname : "Unknown",
             phone: userData ? userData.phone : "Unknown",
@@ -85,7 +87,7 @@ const OrderPage = () => {
   };
 
   fetchOrders();
-}, []); // Run once on component mount
+}, []); 
 
 
   if (loading) {
@@ -125,7 +127,7 @@ const OrderPage = () => {
             key={order.id}
             className=" border-emerald-400 border p-4 m-5 rounded-lg mx-8  text-white space-y-4 flex justify-between items-center"
           >
-            <p>{order.id}</p>
+            <p>{order.displayId}</p>
             <div className="w-40">
               {" "}
               <h2 className="text-lg font-semibold">{order.fullname}</h2>
